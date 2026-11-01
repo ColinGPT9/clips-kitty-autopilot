@@ -33,12 +33,16 @@ No public post was created. Watching was paused, the temporary LIRIK watch was d
 
 The owner then identified that the standalone webcam split's game panel included a duplicate small source webcam. The standalone media adapter had forced a full-frame game box, overriding the foundation's webcam-exclusion geometry. Version 0.1.1 lets the original geometry choose the game region when a webcam exists; the no-camera path still fits the full source.
 
-A failing-first real FFmpeg regression reproduced the duplicate webcam. It now verifies that the rendered game panel excludes a distinctive source webcam while preserving duration. A local 60.100-second framing comparison, using the source app's existing detected camera box with fresh head refinement and captions, passed full decoding and visual checks against the original app's same-clip output. It is a **local framing comparison**, not fresh cloud model inference. The cloud image and demo footage still need updating for this correction.
+A failing-first real FFmpeg regression reproduced the duplicate webcam. It now verifies that the rendered game panel excludes a distinctive source webcam while preserving duration. A local 60.100-second framing comparison, using the source app's existing detected camera box with fresh head refinement and captions, passed full decoding and visual checks against the original app's same-clip output. That initial comparison reused the existing camera decision.
+
+The owner then deployed the correction, independently verified by the live health response reporting **0.1.1**. A fresh cloud model/render pass ran from **09:31:55 UTC to 09:43:42 UTC**, about 11 minutes 47 seconds. The downloaded output measured **60.100 seconds, 1080×1920, with audio** and passed full-file decoding. Visual checks at 3, 12, 25 and 48 seconds confirmed a larger game region, no duplicated source webcam, and generated captions above the gameplay divider. Output SHA-256: `0a87bf9ac761903692773bc08f1d7557f0424e5d130ada6ea1773fb77c00b622`. This is actual standalone cloud inference and rendering, independently of the earlier local comparison.
+
+Actual authenticated cloud preview footage was captured again with the corrected output. The demo was rebuilt from that footage and the corrected cloud video; its displayed test results reference source `2ed3bca` and passing [CI run 41292553292](https://github.com/ColinGPT9/clips-kitty-autopilot/actions/runs/41292553292).
 
 ## Posting decision and remaining evidence
 
 - The owner chose to keep the cloud clip unposted. Public provider scheduling/delivery was not tested in this new deployment.
 - Observe a genuine later view-count crossing if one becomes available. A read-only check at 08:51 UTC found the channel offline and no clips from the previous 30 minutes. Counts were not changed or fabricated.
-- The standalone review demo is 125.581 seconds, with actual cloud UI/preview footage, local female narration and the satire popup. Full-file decoding and audible normalized narration passed. Replace its Gaming footage after the version 0.1.1 cloud refresh before the owner uploads the final public YouTube version.
+- The refreshed review demo, `Clips-Kitty-Autopilot-Cloud-Demo-v0.1.1.mp4`, is **125.581 seconds**, with corrected cloud Gaming/UI footage, local female narration and the satire popup. Full-file decoding and audible normalized narration passed (mean -18.3 dB, peak -1.5 dB). The owner uploads this version publicly to YouTube and supplies its actual URL.
 
 The previously published desktop-app Reel and its target-crossing evidence belong to the starter foundation. They are not claimed as standalone cloud results.

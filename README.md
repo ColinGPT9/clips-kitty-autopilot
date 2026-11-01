@@ -4,6 +4,8 @@ A standalone, self-hosted web app for the moments a Twitch community already cho
 
 **Used as starter template / foundation:** [Clips Kitty](https://github.com/ColinGPT9/clips-studio), a pre-existing AGPL application, provides reusable Twitch/WoopSocial adapters and the Gaming renderer. This is a separate repository and runnable application with its own dashboard, database and worker. See [source provenance](PROVENANCE.md) for reused code and dates; the source app is not represented as newly created here.
 
+**Run it on your own AWS server:** follow the [step-by-step AWS Lightsail setup guide](docs/AWS_SETUP.md), including server creation, HTTPS, login, account connections, updates and troubleshooting.
+
 ## What it does
 
 - Checks Twitch every 15 minutes. Clips below the chosen view target are checked again later.
@@ -54,6 +56,8 @@ Open **http://127.0.0.1:8877**, username **owner**, using your configured passwo
 The daily budget covers clips reserved by **this app**; a clip sent to several profiles counts once toward the five-clip limit and once per selected profile's provider allowance. Existing posts created by other tools are not imported. WoopSocial and each network's limits still apply. Only use media and integrations you are authorized to use. Twitch view counts can lag.
 
 ## Container and cloud
+
+For the complete walkthrough from a new AWS account to your first preview, see [Host Clips Kitty on AWS Lightsail](docs/AWS_SETUP.md).
 
 ```bash
 docker compose up --build -d

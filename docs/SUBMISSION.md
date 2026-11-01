@@ -18,9 +18,9 @@ Codex implemented the standalone application, adapted library imports, wrote reg
 
 - Review the official [rules](https://twitchcon-codex.devpost.com/rules), including the new-project requirement and organizer clarification supplied by the entrant. The organizers determine eligibility.
 - Latest source checks passed on Windows, Linux and the CPU container; follow README setup to test this repository independently.
-- Real Twitch reads and a whole Gaming output ran in this app. Install the caption correction and verify its fresh output before recording the final demo. Do not reuse desktop footage as if it were this app.
-- Capture Codex development footage and retain the actual session ID.
-- Make a public YouTube demonstration under three minutes; the owner uploads it. Only include third-party material/trademarks with required permissions. Enter the actual public URL in Devpost; no demo URL is supplied here yet.
+- Real Twitch reads and a corrected whole Gaming output ran in this app. Actual cloud dashboard and preview footage were captured for the new demo. Do not reuse desktop footage as if it were this app.
+- The new review video, `Clips-Kitty-Autopilot-Cloud-Demo.mp4`, is **125.581 seconds**. It includes actual standalone cloud UI and preview footage, a corrected whole Gaming render, the exact Instagram destination, five/five limits and actual saved Codex build transcript excerpts. It identifies the source as an Earlier clip rather than a new natural crossing. Narration uses the requested local female voice; audio normalization and full-file decoding passed.
+- Upload the review video publicly to YouTube; the owner performs this step. Only include third-party material/trademarks with required permissions. Enter the actual public URL in Devpost; no demo URL is supplied here yet.
 - State the actual hosting platform: AWS Lightsail, with persistent Docker volumes and Caddy HTTPS. The optional Render Blueprint was not deployed.
 
 The provided deadline is November 2, 2026; the prior rules check recorded 2 p.m. Pacific / 5 p.m. Eastern. Verify the form's current deadline when submitting.

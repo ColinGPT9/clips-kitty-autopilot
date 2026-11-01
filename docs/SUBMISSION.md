@@ -4,6 +4,8 @@ Repository: https://github.com/ColinGPT9/clips-kitty-autopilot
 
 Starter foundation: https://github.com/ColinGPT9/clips-studio
 
+Deployment: https://13-184-154-246.sslip.io (owner authentication required). Hosted on AWS Lightsail in Ohio; see [actual cloud checks and remaining evidence](LIVE_TEST.md). Provide judge access privately rather than committing credentials.
+
 ## Description draft
 
 Clips Kitty Autopilot lets a Twitch community choose the highlights. It watches viewer-made Twitch clips until they reach a creator's view target, turns the entire clip into a vertical Gaming video with optional local captions, credits the viewer, and schedules an Instagram Reel through WoopSocial. The owner can approve each clip or explicitly enable automatic scheduling. A shared five-post daily budget, five-upcoming limit, duplicate/overlap filtering and persistent restart recovery keep a busy channel manageable.
@@ -15,10 +17,10 @@ Codex implemented the standalone application, adapted library imports, wrote reg
 ## Complete before submitting
 
 - Review the official [rules](https://twitchcon-codex.devpost.com/rules), including the new-project requirement and organizer clarification supplied by the entrant. The organizers determine eligibility.
-- Check CI and follow README setup to test this repository independently.
-- Record real Twitch interaction and real output from this standalone app. Do not reuse desktop footage as if it were this app.
+- Latest source checks passed on Windows, Linux and the CPU container; follow README setup to test this repository independently.
+- Real Twitch reads and a whole Gaming output ran in this app. Install the caption correction and verify its fresh output before recording the final demo. Do not reuse desktop footage as if it were this app.
 - Capture Codex development footage and retain the actual session ID.
 - Make a public YouTube demonstration under three minutes; the owner uploads it. Only include third-party material/trademarks with required permissions. Enter the actual public URL in Devpost; no demo URL is supplied here yet.
-- State the actual hosting platform, if deployed. The Docker Blueprint is configuration, not proof of a live deployment.
+- State the actual hosting platform: AWS Lightsail, with persistent Docker volumes and Caddy HTTPS. The optional Render Blueprint was not deployed.
 
 The provided deadline is November 2, 2026; the prior rules check recorded 2 p.m. Pacific / 5 p.m. Eastern. Verify the form's current deadline when submitting.

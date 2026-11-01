@@ -8,7 +8,7 @@ Local checks cover baseline versus later crossing, backfill, duplicate suppressi
 
 The reused Twitch and WoopSocial SDK regression suites are retained with local package imports. Their scenarios include permission/row validation, pagination, rate limits, safe errors and provider payloads. Provider fakes never call the live services.
 
-Pending live checks: connect the new app's Twitch account; verify a real read and whole render in its own UI; explicitly approve any public Instagram test; verify provider delivery. No new public post or new target crossing has been fabricated. Cloud deployment and fresh demonstration video remain separate tasks. Existing desktop-app evidence is historical context for the reused foundation, not this standalone deployment.
+Live deployment, account connections, real Twitch reads and a whole Gaming render have now been checked in the standalone app; see [cloud test evidence](LIVE_TEST.md). A caption-placement correction is awaiting installation and a fresh cloud render. Public Instagram approval/delivery, a new natural target crossing and the final public demonstration URL remain pending. Existing desktop-app evidence is historical context for the reused foundation, not this standalone deployment.
 
 GitHub [run 41279148805](https://github.com/ColinGPT9/clips-kitty-autopilot/actions/runs/41279148805) passed all three jobs on source commit `e66d07d`: Linux tests/browser/render checks, Windows tests, and Docker build with independent container startup/authentication checks. Local Docker is unavailable on the development machine; the container was validated in GitHub CI. The prepared Render Blueprint also passed validation against Render's published JSON schema.
 
@@ -18,4 +18,12 @@ After restoring YOLOv8n-pose/TalkNet and retaining Whisper captions, local regre
 
 A private, previously authorized 60.015-second Twitch source was processed by the new standalone model subprocesses and FFmpeg: output 60.100 seconds, 1080×1920, audio retained, Whisper captions written. That clip did not produce a confident overlay-camera selection, so output used the whole-source fit layout; it is not evidence of a successful automatic split on that clip. The run took 214.61 seconds on the development Windows machine and the maximum sampled process-tree RSS was 955.4 MiB. This is one local measurement, not a Lightsail benchmark or an upper bound for other media. The source/output remain private runtime files and were not posted publicly or used as a new target-crossing observation.
 
-CI now additionally validates the cloud Compose/Caddy configuration, builds CPU-only PyTorch, and runs real YOLO/TalkNet inference plus speech-caption generation under a 3 GiB container limit. Those new CI results must be checked on the restored source revision before deployment is called verified.
+CI additionally validates the cloud Compose/Caddy configuration, builds CPU-only PyTorch, and runs real YOLO/TalkNet inference plus speech-caption generation under a 3 GiB container limit. [Run 41284049543](https://github.com/ColinGPT9/clips-kitty-autopilot/actions/runs/41284049543) passed after adding the clean-container SciPy dependency.
+
+## Caption placement correction
+
+The first real cloud Gaming render exposed overlapping captions where the Twitch source already contained subtitles. The correction positions generated captions above the gameplay divider for split layouts and keeps the existing bottom margin for the whole-source fit layout. Two regression cases cover those placements.
+
+Local results on source revision `810d23e`: **201 passed**, Ruff passed, and the platform subset passed **198 checks** (three real-media cases deselected). [Run 41288528752](https://github.com/ColinGPT9/clips-kitty-autopilot/actions/runs/41288528752) passed all three jobs: Linux tests/browser/render/wheel checks, Windows tests/wheel checks, and independent container startup plus real model inference. The container's synthetic 151-frame YOLO/TalkNet smoke check reported 852.6 MiB peak RSS; real Whisper speech-caption generation also passed within the same 3 GiB limit. These fixtures verify execution and resource fit for those inputs; they are not Twitch view-count or posting evidence.
+
+The owner must update the running Lightsail image before the existing review clip can be rerendered and the caption correction visually verified there. The app's health version remains `0.1.0`, so its health response alone does not prove which source revision is installed.

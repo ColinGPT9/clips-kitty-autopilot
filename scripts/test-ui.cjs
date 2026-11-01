@@ -7,6 +7,7 @@ const path = require("node:path");
 const assert = require("node:assert/strict");
 const root = path.resolve(__dirname, "../autopilot/static");
 const writes = [];
+const requests = [];
 const state = {
   settings: {enabled:false, per_day:5, max_pending:5, gap_hours:1, day_start:"09:00", timezone:"America/New_York", twitch_client_id:"", instagram_id:"12", instagram_username:"fixturebrand", accounts:[{id:"12",platform:"instagram",username:"fixturebrand"}]},
   connections:{twitch:true,twitch_login:"fixtureviewer",woopsocial:true},
@@ -17,6 +18,7 @@ const state = {
 app.disableHardwareAcceleration();
 app.whenReady().then(async () => {
   const server = http.createServer((req,res) => {
+    requests.push(req.url);
     if(req.url.startsWith("/api/")) {
       if(req.method !== "GET") { writes.push(req.url); if(req.url.endsWith("/approve")) state.clips[0].state="scheduled"; }
       res.setHeader("Content-Type","application/json");res.end(JSON.stringify(req.url==="/api/status" ? state : {saved:true}));return;
@@ -32,6 +34,15 @@ app.whenReady().then(async () => {
   try {
     await win.loadURL(`http://127.0.0.1:${server.address().port}/`);await pause();
     assert.equal(writes.length,0,"Rendering the dashboard must not mutate state");
+    assert.deepEqual(await js(`Array.from(document.querySelectorAll('.clip-body .buttons button')).map(b=>b.textContent)`),
+      ["Schedule to @fixturebrand", "Damage Control", "Deny"], "Ready clips expose Schedule, Damage Control and Deny in order");
+    const beforeDamageControl = requests.length;
+    await js(`document.querySelectorAll('.clip-body .buttons button')[1].click()`);await pause();
+    assert.ok(await js(`document.getElementById('damage-dialog').open`), "The clip action opens Damage Control");
+    assert.equal(writes.length,0,"Damage Control must not schedule or delete anything");
+    assert.equal(requests.length,beforeDamageControl,"Opening clip Damage Control makes no request");
+    assert.ok(!await js(`document.getElementById('damage-dialog').textContent.toLowerCase().includes('joke button')`));
+    await js(`document.getElementById('damage-dialog').close()`);
     assert.ok(await js(`document.body.innerText.includes('Schedule to @fixturebrand')`),"Exact destination visible before approval");
     assert.equal(await js(`document.querySelectorAll('.clip-body script').length`),0,"Titles must be text");
     await js(`document.getElementById('damage-open').click()`);await pause();

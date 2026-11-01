@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clips-kitty-autopilot"
-version = "0.1.1"
+version = "0.1.2"
 description = "An independent Twitch community clip automation app built on the Clips Kitty starter foundation"
 requires-python = ">=3.11"
 license = "AGPL-3.0-or-later"

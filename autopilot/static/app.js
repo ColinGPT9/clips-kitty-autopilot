@@ -12,6 +12,7 @@ async function api(path, body, method = "POST") {
 function button(text, action, cls = "secondary") { const b = node("button", text, cls); b.type = "button"; b.addEventListener("click", async () => { b.disabled = true; try { await action(); await refresh(); } catch (e) { toast(e.message); } finally { b.disabled = false; } }); return b; }
 function external(text, url, cls) { const a = node("a", text, cls); try { const u = new URL(url); if (u.protocol === "https:") { a.href = u.href; a.target = "_blank"; a.rel = "noopener noreferrer"; } } catch {} return a; }
 function empty(container, title, detail) { const item = node("div", undefined, "empty"); item.append(node("strong", title), node("p", detail)); container.append(item); }
+function openDamageControl() { $("damage-dialog").showModal(); }
 function date(value) { if (!value) return "—"; return new Date(typeof value === "number" ? value * 1000 : value).toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit", timeZone: state.settings.timezone}); }
 function renderWatches() {
   const root = $("watches"); root.replaceChildren();
@@ -43,7 +44,11 @@ function renderClips() {
     if(c.error) body.append(node("p", c.error, "error"));
     body.append(external("Original Twitch clip ↗", c.source_url, "source"));
     const actions = node("div", undefined, "buttons");
-    if(c.state === "review") { const account_id = state.settings.instagram_id; actions.append(button(`Schedule to @${state.settings.instagram_username || "select Instagram"}`, () => api(`/api/clips/${c.id}/approve`, {account_id}), "primary")); }
+    if(c.state === "review") {
+      const account_id = state.settings.instagram_id, damage = node("button", "Damage Control", "secondary");
+      damage.type = "button"; damage.addEventListener("click", openDamageControl);
+      actions.append(button(`Schedule to @${state.settings.instagram_username || "select Instagram"}`, () => api(`/api/clips/${c.id}/approve`, {account_id}), "primary"), damage);
+    }
     if(["baseline","denied","error"].includes(c.state)) actions.append(button(c.state === "error" ? "Retry processing" : "Clip this", () => api(`/api/clips/${c.id}/queue`, {})));
     if(["baseline","waiting","queued","review","error"].includes(c.state)) actions.append(button("Deny", () => api(`/api/clips/${c.id}/deny`, {}), "ghost"));
     body.append(actions); card.append(cover, body); root.append(card);
@@ -70,7 +75,7 @@ function fillSettings() { const form = $("settings-form"); for(const key of ["tw
 async function saveSettings() { const f = $("settings-form").elements, body = {}; for(const key of ["twitch_client_id","day_start","timezone"]) body[key]=f[key].value.trim(); for(const key of ["per_day","max_pending","gap_hours"]) body[key]=Number(f[key].value); if(f.woop_key.value.trim()) body.woop_key=f.woop_key.value.trim(); await api("/api/settings",body); f.woop_key.value=""; }
 $("settings-open").addEventListener("click",()=>{if(!state)return; fillSettings(); $("settings-dialog").showModal();});
 $("add-open").addEventListener("click",()=>$("watch-dialog").showModal());
-$("damage-open").addEventListener("click",()=>$("damage-dialog").showModal());
+$("damage-open").addEventListener("click",openDamageControl);
 document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>$(b.dataset.close).close()));
 $("preview-dialog").addEventListener("close",()=>{$("preview-video").pause(); $("preview-video").removeAttribute("src"); $("preview-video").load();});
 $("clip-filter").addEventListener("change",()=>state&&renderClips());

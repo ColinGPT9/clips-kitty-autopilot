@@ -13,7 +13,7 @@ A standalone, self-hosted web app for the moments a Twitch community already cho
 - **Ask first** is the default. One **Schedule to @account** click schedules directly through WoopSocial; a second provider-side approval is not part of this flow. Automatic mode is an explicit opt-in.
 - Shows the exact selected Instagram destination. Approval freezes that destination; changing Settings cannot silently redirect an approved clip. No YouTube or TikTok destination is exposed.
 - Remembers work after restarts. Ambiguous sends are held for inspection instead of retried into duplicate posts. This is not a guarantee of exactly-once behavior by third-party systems.
-- Includes a generic **Damage Control** satire popup. It does not delete anything, contact anyone or send takedowns.
+- Ready clips show **Schedule → Damage Control → Deny**. Damage Control opens the satirical preview without deleting anything, contacting anyone or sending takedowns.
 
 ## Run locally
 

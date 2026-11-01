@@ -1,6 +1,6 @@
 # Source provenance
 
-Starter foundation: [Clips Kitty](https://github.com/ColinGPT9/clips-studio), a pre-existing open-source application. This independent repository reuses its provider adapters and result/error contracts as a library. It is not a GitHub fork.
+Used as starter template / foundation: [Clips Kitty](https://github.com/ColinGPT9/clips-studio), a pre-existing open-source application. This independent repository reuses its provider adapters and result/error contracts as a library. It is not a GitHub fork.
 
 The upstream application predates the hackathon. Its Twitch Clips/Autopilot additions were developed October 30-31, 2026. This standalone web application is assembled November 1, 2026. Reused code is not claimed as newly authored here; fresh repository history does not erase its origin. Eligibility is determined by the organizers.
 

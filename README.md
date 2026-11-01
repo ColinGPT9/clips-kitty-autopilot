@@ -2,7 +2,7 @@
 
 A standalone, self-hosted web app for the moments a Twitch community already chose. Watch a channel's viewer-made clips, set a view target, preserve the whole clip in a vertical Gaming layout, review it and schedule an Instagram Reel through WoopSocial. Every post credits the viewer who clipped it.
 
-**Starter foundation:** [Clips Kitty](https://github.com/ColinGPT9/clips-studio), a pre-existing AGPL application, provides reusable Twitch/WoopSocial adapters and the Gaming renderer. This is a separate repository and runnable application with its own dashboard, database and worker. See [source provenance](PROVENANCE.md) for reused code and dates; the source app is not represented as newly created here.
+**Used as starter template / foundation:** [Clips Kitty](https://github.com/ColinGPT9/clips-studio), a pre-existing AGPL application, provides reusable Twitch/WoopSocial adapters and the Gaming renderer. This is a separate repository and runnable application with its own dashboard, database and worker. See [source provenance](PROVENANCE.md) for reused code and dates; the source app is not represented as newly created here.
 
 ## What it does
 

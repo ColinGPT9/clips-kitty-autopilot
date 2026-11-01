@@ -71,4 +71,3 @@ def test_stale_destination_is_refused_before_publication(client):
     response = client.post("/api/clips/fixture/approve", json={"account_id": "12"})
     assert response.status_code == 400
     assert store.clip("fixture")["state"] == "review"
-

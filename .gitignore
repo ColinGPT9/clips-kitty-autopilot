@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+data/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.mp4
+*.wav
+*.srt
+*.log
+*.egg-info/
+build/
+dist/
+node_modules/

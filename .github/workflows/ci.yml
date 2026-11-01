@@ -1,0 +1,51 @@
+name: Standalone app checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m ruff check .
+      - run: node --check autopilot/static/app.js
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - if: runner.os == 'Linux'
+        run: python -m pytest
+      - if: runner.os == 'Windows'
+        run: python -m pytest -m 'not media'
+      - run: python -m pip wheel --no-deps --wheel-dir dist .
+      - if: runner.os == 'Linux'
+        run: npm install --no-save electron
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a node_modules/.bin/electron --no-sandbox scripts/test-ui.cjs
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --tag clips-kitty-autopilot:test .
+      - name: Verify independent container startup
+        shell: bash
+        run: |
+          docker run -d --name autopilot -p 8877:8000 -e AUTOPILOT_PASSWORD=ci-only-fixture-password clips-kitty-autopilot:test
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8877/health; then break; fi
+            sleep 2
+          done
+          curl --fail --silent --user owner:ci-only-fixture-password http://127.0.0.1:8877/api/status
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8877/api/status)" = "401"
+          docker stop autopilot

@@ -1,0 +1,15 @@
+services:
+  autopilot:
+    build: .
+    ports:
+      - "127.0.0.1:8877:8000"
+    environment:
+      AUTOPILOT_PASSWORD: ${AUTOPILOT_PASSWORD:?Set AUTOPILOT_PASSWORD in .env to at least 12 characters}
+      DATA_DIR: /data
+      HOST: 0.0.0.0
+      PORT: "8000"
+    volumes:
+      - autopilot-data:/data
+    restart: unless-stopped
+volumes:
+  autopilot-data:

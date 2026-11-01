@@ -11,7 +11,7 @@ license = "AGPL-3.0-or-later"
 dependencies = ["fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1", "requests>=2.32,<3", "cryptography>=43", "yt-dlp>=2026.8.19", "tzdata>=2025.1"]
 
 [project.optional-dependencies]
-media = ["faster-whisper>=1.2,<2", "opencv-python-headless>=4.10,<6", "ultralytics-opencv-headless>=8.4,<9", "python-speech-features>=0.6,<1"]
+media = ["faster-whisper>=1.2,<2", "opencv-python-headless>=4.10,<6", "ultralytics-opencv-headless>=8.4,<9", "python-speech-features>=0.6,<1", "scipy>=1.10,<2"]
 dev = ["pytest>=8,<10", "httpx>=0.27,<1", "ruff>=0.9", "numpy>=1.26,<3", "opencv-python-headless>=4.10,<6"]
 
 [tool.setuptools.packages.find]

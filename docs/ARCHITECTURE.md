@@ -49,7 +49,7 @@ All routes except `GET /health` require HTTP Basic authentication, username `own
 | `POST /api/clips/{id}/deny` | Decline unsent work |
 | `GET /media/{id}` | Authenticated rendered video only, including range requests |
 
-Ready clips expose Schedule, Damage Control and Deny in that order. Damage Control is a normal secondary button that opens the existing preview dialog entirely in the browser, without any API request. The popup's capability note states that nothing is deleted or sent; it does not label the control a "joke button."
+Ready clips expose Schedule, Damage Control and Deny in that order. Damage Control is a normal secondary button that opens the existing preview dialog entirely in the browser, without any API request. The popup's capability note states that nothing is deleted or sent.
 
 ## Gaming model execution
 

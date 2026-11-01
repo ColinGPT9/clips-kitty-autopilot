@@ -43,6 +43,12 @@ Actual authenticated cloud preview footage was captured again with the corrected
 
 - The owner chose to keep the cloud clip unposted. Public provider scheduling/delivery was not tested in this new deployment.
 - Observe a genuine later view-count crossing if one becomes available. A read-only check at 08:51 UTC found the channel offline and no clips from the previous 30 minutes. Counts were not changed or fabricated.
-- The refreshed review demo, `Clips-Kitty-Autopilot-Cloud-Demo-v0.1.1.mp4`, is **125.581 seconds**, with corrected cloud Gaming/UI footage, local female narration and the satire popup. Full-file decoding and audible normalized narration passed (mean -18.3 dB, peak -1.5 dB). The owner uploads this version publicly to YouTube and supplies its actual URL.
+- The refreshed review demo, `Clips-Kitty-Autopilot-Cloud-Demo-v0.1.2.mp4`, is **143.834 seconds**, with corrected cloud Gaming/UI footage, local female narration, the revised Damage Control segment and the owner's Instagram recording. Full-file decoding and audible normalized narration passed (mean -18.3 dB, peak -1.5 dB). The owner uploads this version publicly to YouTube and supplies its actual URL.
+
+## Clip actions and owner-supplied published example
+
+Version **0.1.2** was independently verified live. Authenticated captures show Schedule, Damage Control and Deny on ready clips, and the existing popup opening directly from the Asmongold clip card. No scheduling or deletion was triggered by those captures.
+
+The owner supplied a 14.328-second phone recording created at 00:53:10 UTC on November 1 (October 31 evening in Eastern time). It visibly shows the existing Asmongold Reel on **@clipskitty2**. At the owner's request, the entire recording is included alongside the new cloud preview in the demo. Labels and narration identify it as an **original desktop-app publishing example**, rather than a new cloud-app delivery. The cloud test clips remain unposted.
 
 The previously published desktop-app Reel and its target-crossing evidence belong to the starter foundation. They are not claimed as standalone cloud results.

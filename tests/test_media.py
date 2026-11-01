@@ -29,9 +29,25 @@ def test_whole_render_retains_video_when_audio_ends_early(tmp_path, audio, camer
 
 def test_caption_failure_does_not_silently_publish_without_captions(tmp_path, monkeypatch):
     monkeypatch.setattr(media, "probe", lambda path: {"width": 320, "height": 180, "duration": 2, "has_audio": True})
-    def fail(*args):
+    def fail(*args, **kwargs):
         raise RuntimeError("fixture unavailable model")
     monkeypatch.setattr(media, "captions", fail)
     with pytest.raises(RuntimeError):
         media.render_whole(tmp_path / "fixture.mp4", tmp_path / "output.mp4", {"captions": True, "detect_camera": False})
     assert not (tmp_path / "output.mp4").exists()
+
+
+def test_gaming_captions_clear_the_gameplay_region():
+    from autopilot.engine import layout
+    plan = layout.plan(1920, 1080, {"cam": [0, 0, .25, .37], "preset": "half",
+                                    "game_fit": "fit", "game_box": [0, 0, 1, 1]})
+    margin = media.caption_margin(plan)
+    baseline = 1920 - margin
+    assert baseline <= plan.element("game").dest[1] - 30
+    assert baseline > plan.element("cam").dest[1]
+
+
+def test_whole_source_fit_keeps_bottom_safe_caption_position():
+    from autopilot.engine import layout
+    plan = layout.plan(1920, 1080, {"cam": None, "preset": "blurred", "game_box": [0, 0, 1, 1]})
+    assert media.caption_margin(plan) == 210

@@ -51,6 +51,7 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--models", required=True, type=Path)
     parser.add_argument("--duration", type=float, default=0)
+    parser.add_argument("--caption-margin", type=int, default=210)
     args = parser.parse_args()
     os.environ["AUTOPILOT_MODEL_DIR"] = str(args.models.resolve())
     os.environ.setdefault("YOLO_CONFIG_DIR", str(args.models / "ultralytics"))
@@ -69,7 +70,7 @@ def main():
         args.output.write_text(json.dumps(result), encoding="utf-8")
     else:
         from .media import _write_captions
-        _write_captions(args.source, args.output.parent, args.duration, args.models)
+        _write_captions(args.source, args.output.parent, args.duration, args.models, args.caption_margin)
 
 
 if __name__ == "__main__":

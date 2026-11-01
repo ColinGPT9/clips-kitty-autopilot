@@ -46,13 +46,13 @@ def download(clip_id, directory):
         raise RuntimeError("Twitch clip download failed. Check that the source is still available.") from None
 
 
-def _model_step(operation, source, output, model_directory, duration=0):
+def _model_step(operation, source, output, model_directory, duration=0, bottom_margin=210):
     import sys
     output = Path(output)
     output.unlink(missing_ok=True)
     command = [sys.executable, "-m", "autopilot.vision", operation, str(Path(source).resolve()),
                str(output.resolve()), "--models", str(Path(model_directory).resolve()),
-               "--duration", str(duration)]
+               "--duration", str(duration), "--caption-margin", str(bottom_margin)]
     result = subprocess.run(command, capture_output=True, text=True, timeout=1800,
                             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
     if result.returncode or not output.is_file():
@@ -65,9 +65,17 @@ def _camera(source, directory, model_directory):
     return json.loads(result.read_text(encoding="utf-8"))
 
 
-def captions(source, directory, duration):
+def captions(source, directory, duration, *, bottom_margin=210):
     return _model_step("captions", source, Path(directory) / "captions.ass",
-                       Path(directory).parent.parent / "models", duration)
+                       Path(directory).parent.parent / "models", duration, bottom_margin)
+
+
+def caption_margin(plan):
+    """Keep generated gaming captions above gameplay, including baked source text."""
+    game = plan.element("game")
+    if plan.element("cam") and game and game.dest[1] > 0:
+        return min(1800, max(210, layout.OUT_H - game.dest[1] + 36))
+    return 210
 
 
 def _ass_time(seconds):
@@ -75,7 +83,9 @@ def _ass_time(seconds):
     return f"{value // 360000}:{value // 6000 % 60:02}:{value // 100 % 60:02}.{value % 100:02}"
 
 
-def _write_captions(source, directory, duration, model_directory):
+def _write_captions(source, directory, duration, model_directory, bottom_margin=210):
+    if not 64 <= bottom_margin <= 1800:
+        raise ValueError("Caption margin must be between 64 and 1800 pixels")
     from faster_whisper import WhisperModel
     model_name = os.environ.get("WHISPER_MODEL", "base.en")
     model = WhisperModel(model_name, device="cpu", compute_type="int8",
@@ -98,7 +108,7 @@ Style: Default,DejaVu Sans,64,&H00FFFFFF,&H00FFFFFF,&H00101010,&H80000000,-1,0,0
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
-    lines = [header]
+    lines = [header.replace(",65,65,210,1", f",65,65,{bottom_margin},1")]
     for index in range(0, len(words), 3):
         group = words[index:index + 3]
         start, stop = max(0, group[0][0]), min(duration, group[-1][1])
@@ -128,7 +138,8 @@ def render_whole(source, target, options=None):
                 "game_fit": "fit", "game_box": [0, 0, 1, 1]}
     plan = layout.plan(facts["width"], facts["height"], settings,
                        {"cam": detection["head"]} if cam and detection.get("head") else {})
-    ass = captions(source, work, facts["duration"]) if options.get("captions", True) and facts["has_audio"] else None
+    margin = caption_margin(plan)
+    ass = captions(source, work, facts["duration"], bottom_margin=margin) if options.get("captions", True) and facts["has_audio"] else None
     temporary = target.with_name(target.stem + ".partial.mp4")
     try:
         compose.render(source, temporary, plan, ass_path=ass)
@@ -140,6 +151,6 @@ def render_whole(source, target, options=None):
         raise RuntimeError("Whole-clip rendering failed. The source is retained for inspection.") from None
     metadata = {**result, "source_duration": facts["duration"], "layout": plan.kind,
                 "whole": True, "captions": ass is not None, "camera": cam,
-                "detector": detection["detector"], "path": str(target)}
+                "detector": detection["detector"], "caption_margin": margin, "path": str(target)}
     target.with_suffix(".json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     return metadata

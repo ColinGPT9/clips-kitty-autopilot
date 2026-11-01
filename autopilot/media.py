@@ -46,31 +46,28 @@ def download(clip_id, directory):
         raise RuntimeError("Twitch clip download failed. Check that the source is still available.") from None
 
 
-def _camera(source, width, height):
-    """Conservative edge-face hint; full gameplay is retained below any crop."""
-    try:
-        import cv2
-        cap = cv2.VideoCapture(str(source))
-        cap.set(cv2.CAP_PROP_POS_MSEC, 2000)
-        ok, frame = cap.read()
-        cap.release()
-        if not ok:
-            return None
-        resized = cv2.resize(frame, (min(width, 960), int(height * min(width, 960) / width)))
-        gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-        detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-        faces = detector.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=6, minSize=(32, 32))
-        rw, rh = resized.shape[1], resized.shape[0]
-        for x, y, w, h in sorted(faces, key=lambda f: f[2] * f[3], reverse=True):
-            if y / rh > .45 or not (x / rw < .25 or (x + w) / rw > .75):
-                continue
-            bw, bh = min(.4, w / rw * 2.2), min(.55, h / rh * 2.2)
-            bx = max(0, min(1 - bw, (x + w / 2) / rw - bw / 2))
-            by = max(0, min(1 - bh, (y + h / 2) / rh - bh / 2))
-            return [bx, by, bw, bh]
-    except (ImportError, OSError, ValueError):
-        return None
-    return None
+def _model_step(operation, source, output, model_directory, duration=0):
+    import sys
+    output = Path(output)
+    output.unlink(missing_ok=True)
+    command = [sys.executable, "-m", "autopilot.vision", operation, str(Path(source).resolve()),
+               str(output.resolve()), "--models", str(Path(model_directory).resolve()),
+               "--duration", str(duration)]
+    result = subprocess.run(command, capture_output=True, text=True, timeout=1800,
+                            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+    if result.returncode or not output.is_file():
+        raise RuntimeError(f"{operation.title()} processing failed. Check model downloads and available memory.")
+    return output
+
+
+def _camera(source, directory, model_directory):
+    result = _model_step("camera", source, Path(directory) / "camera.json", model_directory)
+    return json.loads(result.read_text(encoding="utf-8"))
+
+
+def captions(source, directory, duration):
+    return _model_step("captions", source, Path(directory) / "captions.ass",
+                       Path(directory).parent.parent / "models", duration)
 
 
 def _ass_time(seconds):
@@ -78,11 +75,11 @@ def _ass_time(seconds):
     return f"{value // 360000}:{value // 6000 % 60:02}:{value // 100 % 60:02}.{value % 100:02}"
 
 
-def captions(source, directory, duration):
+def _write_captions(source, directory, duration, model_directory):
     from faster_whisper import WhisperModel
     model_name = os.environ.get("WHISPER_MODEL", "base.en")
     model = WhisperModel(model_name, device="cpu", compute_type="int8",
-                         download_root=str(Path(directory).parent.parent / "models"))
+                         download_root=str(model_directory), cpu_threads=2, num_workers=1)
     segments, _ = model.transcribe(str(source), word_timestamps=True, vad_filter=True)
     words = []
     for segment in segments:
@@ -123,11 +120,14 @@ def render_whole(source, target, options=None):
     work = target.parent / (target.stem + "-work")
     work.mkdir(exist_ok=True)
     cam = options.get("camera")
+    detection = {"camera": cam, "head": None, "detector": "manual" if cam else "off"}
     if cam is None and options.get("detect_camera", True):
-        cam = _camera(source, facts["width"], facts["height"])
+        detection = _camera(source, work, target.parent.parent / "models")
+        cam = detection["camera"]
     settings = {"cam": cam, "preset": "half" if cam else "blurred", "order": "cam_top",
                 "game_fit": "fit", "game_box": [0, 0, 1, 1]}
-    plan = layout.plan(facts["width"], facts["height"], settings)
+    plan = layout.plan(facts["width"], facts["height"], settings,
+                       {"cam": detection["head"]} if cam and detection.get("head") else {})
     ass = captions(source, work, facts["duration"]) if options.get("captions", True) and facts["has_audio"] else None
     temporary = target.with_name(target.stem + ".partial.mp4")
     try:
@@ -139,6 +139,7 @@ def render_whole(source, target, options=None):
     except Exception:
         raise RuntimeError("Whole-clip rendering failed. The source is retained for inspection.") from None
     metadata = {**result, "source_duration": facts["duration"], "layout": plan.kind,
-                "whole": True, "captions": ass is not None, "camera": cam, "path": str(target)}
+                "whole": True, "captions": ass is not None, "camera": cam,
+                "detector": detection["detector"], "path": str(target)}
     target.with_suffix(".json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     return metadata

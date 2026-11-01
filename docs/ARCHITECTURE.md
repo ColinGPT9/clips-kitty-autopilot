@@ -50,3 +50,9 @@ All routes except `GET /health` require HTTP Basic authentication, username `own
 | `GET /media/{id}` | Authenticated rendered video only, including range requests |
 
 The satire button is entirely local UI behavior and makes no API request.
+
+## Gaming model execution
+
+The Gaming detector reuses Clips Kitty's original YOLOv8n-pose track matching, TalkNet speaker scoring, presence/overlay checks and OpenCV border refinement. It does not choose a webcam merely because it is the largest face. Missing/corrupt required models fail processing rather than silently reverting to a different detector.
+
+Each clip uses a short-lived CPU detector process, then a separate Whisper caption process, then FFmpeg. This preserves the full clip while avoiding simultaneous retained model allocations. TalkNet scores with its original 1/2/4/6-second windows, in batches of at most 150 visual frames. Camera/head metadata is supplied to the existing Gaming geometry for framing. Pinned detector checksums and all model caches live on the persistent data volume.

@@ -8,7 +8,7 @@ A standalone, self-hosted web app for the moments a Twitch community already cho
 
 - Checks Twitch every 15 minutes. Clips below the chosen view target are checked again later.
 - First-look clips already above the target stay under **Earlier clips**, unless backfill is explicitly enabled. Later crossings are recorded separately.
-- Downloads and renders the **entire** viewer clip, up to three minutes, as 1080×1920 H.264/AAC. Gameplay is fitted whole; an optional detected facecam gets a separate region. Local Whisper captions are enabled by default.
+- Downloads and renders the **entire** viewer clip, up to three minutes, as 1080×1920 H.264/AAC. YOLOv8n pose locates people, TalkNet identifies the speaking streamer and OpenCV refines the facecam region. Gameplay is fitted whole; a real overlay facecam gets a separate region. Local Whisper captions are enabled by default. A silent game character or full-screen speaker does not automatically become a split-screen facecam.
 - Defaults to **five posts per day and five upcoming clips**, shared across channels, at least one hour apart. Additional clips wait for room. Same IDs and strongly overlapping moments from the same VOD are suppressed.
 - **Ask first** is the default. One **Schedule to @account** click schedules directly through WoopSocial; a second provider-side approval is not part of this flow. Automatic mode is an explicit opt-in.
 - Shows the exact selected Instagram destination. Approval freezes that destination; changing Settings cannot silently redirect an approved clip. No YouTube or TikTok destination is exposed.
@@ -17,7 +17,7 @@ A standalone, self-hosted web app for the moments a Twitch community already cho
 
 ## Run locally
 
-Requires Python 3.11+, [FFmpeg/FFprobe](https://ffmpeg.org/download.html) on PATH, and a browser. Install the optional media dependencies for captions and face detection. No existing Clips Kitty checkout or desktop app is needed.
+Requires Python 3.11+, [FFmpeg/FFprobe](https://ffmpeg.org/download.html) on PATH, and a browser. Install the media dependencies for Whisper captions, TalkNet, YOLOv8 and OpenCV. No existing Clips Kitty checkout or desktop app is needed. The Docker image installs CPU-only PyTorch; local pip installs follow the PyTorch distribution selected for your environment.
 
 PowerShell:
 
@@ -59,9 +59,19 @@ The daily budget covers posts reserved by **this app**. Existing posts created b
 docker compose up --build -d
 ```
 
-Set `AUTOPILOT_PASSWORD` in `.env` first. Compose binds localhost:8877 and retains its SQLite database, encrypted credentials, media and models in a named volume. Run **one instance / one worker** on a persistent disk. Do not use ephemeral serverless hosting for the FFmpeg worker. Caption models download on first use; CPU transcription/rendering can take several minutes.
+Set `AUTOPILOT_PASSWORD` in `.env` first. Compose binds localhost:8877 and retains its SQLite database, encrypted credentials, media and models in a named volume. Run **one instance / one worker** on a persistent disk. Start testing the full Gaming pipeline on a **4 GB RAM CPU server**. This is a deployment starting point, not a benchmarked Lightsail guarantee. Camera detection, Whisper transcription and FFmpeg encoding run sequentially; detector/caption models run in separate short-lived processes so their memory is released before the next stage. TalkNet inference uses bounded 150-frame batches. Do not use ephemeral serverless hosting for the FFmpeg worker. Models download on first use; CPU processing can take several minutes per clip. YOLO/TalkNet downloads are checked against pinned SHA-256 hashes and saved on the data volume.
 
 [`render.yaml`](render.yaml) is an optional Docker Blueprint with a persistent disk and generated owner password. Review the selected paid plan and disk before deploying; no cloud service is provisioned by cloning this repository. Retrieve the generated `AUTOPILOT_PASSWORD` from your host's environment settings and use HTTPS. Details: [Render Blueprint reference](https://render.com/docs/blueprint-spec). Actual hosting and provider connection checks are recorded in [validation](docs/VALIDATION.md).
+
+For an Ubuntu Lightsail server with Docker, the HTTPS deployment is:
+
+```bash
+git clone https://github.com/ColinGPT9/clips-kitty-autopilot.git
+cd clips-kitty-autopilot
+sudo bash scripts/deploy-lightsail.sh your.public.hostname
+```
+
+Attach a static IPv4 address, point your hostname at it, and allow TCP ports 80/443 in Lightsail. If you have no domain, a hostname like `YOUR-IP-WITH-DASHES.sslip.io` can resolve to your public IP; see [sslip.io](https://sslip.io/) for the service and certificate limits. [`compose.cloud.yaml`](compose.cloud.yaml) runs Caddy for automatic HTTPS and retains certificates and application data in Docker volumes. Only the proxy exposes public ports; the Python service stays on Docker's internal network. The installer generates a private owner password in `.env.cloud` and preserves it on subsequent runs. View it privately on the server when signing in. This script configures the app; it does not modify AWS billing, account plans, firewall rules or purchase cloud resources.
 
 Back up the entire data volume, including `encryption.key`. If you supply `AUTOPILOT_ENCRYPTION_KEY`, retain that same Fernet key across deployments. Losing the key requires reconnecting accounts. Media retention is manual; pause and remove unused completed download/render files when disk space is low, keeping the database for deduplication history.
 

@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg fonts-de
 WORKDIR /app
 COPY pyproject.toml LICENSE README.md ./
 COPY autopilot ./autopilot
-RUN pip install --no-cache-dir '.[media]'
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir '.[media]'
 USER kitty
 VOLUME ["/data"]
 EXPOSE 8000

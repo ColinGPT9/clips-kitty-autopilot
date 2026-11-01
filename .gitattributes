@@ -1,0 +1,2 @@
+*.sh text eol=lf
+autopilot/vendor/talknet/** linguist-vendored -whitespace

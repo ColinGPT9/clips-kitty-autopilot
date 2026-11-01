@@ -3,7 +3,7 @@ services:
   - type: web
     name: clips-kitty-autopilot
     runtime: docker
-    plan: standard
+    plan: pro
     numInstances: 1
     healthCheckPath: /health
     autoDeployTrigger: "off"

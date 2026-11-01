@@ -1,6 +1,6 @@
 # Clips Kitty Autopilot
 
-A standalone, self-hosted web app for the moments a Twitch community already chose. Watch a channel's viewer-made clips, set a view target, preserve the whole clip in a vertical Gaming layout, review it and schedule an Instagram Reel through WoopSocial. Every post credits the viewer who clipped it.
+A standalone, self-hosted web app for the moments a Twitch community already chose. Watch a channel's viewer-made clips, set a view target, preserve the whole clip in a vertical Gaming layout, review it and schedule it to your selected social profiles through WoopSocial. Every post credits the viewer who clipped it.
 
 **Used as starter template / foundation:** [Clips Kitty](https://github.com/ColinGPT9/clips-studio), a pre-existing AGPL application, provides reusable Twitch/WoopSocial adapters and the Gaming renderer. This is a separate repository and runnable application with its own dashboard, database and worker. See [source provenance](PROVENANCE.md) for reused code and dates; the source app is not represented as newly created here.
 
@@ -9,9 +9,9 @@ A standalone, self-hosted web app for the moments a Twitch community already cho
 - Checks Twitch every 15 minutes. Clips below the chosen view target are checked again later.
 - First-look clips already above the target stay under **Earlier clips**, unless backfill is explicitly enabled. Later crossings are recorded separately.
 - Downloads and renders the **entire** viewer clip, up to three minutes, as 1080×1920 H.264/AAC. YOLOv8n pose locates people, TalkNet identifies the speaking streamer and OpenCV refines the facecam region. With a facecam, the game panel uses the foundation's webcam-aware crop so the streamer is shown once. Without a facecam, the whole source frame is fitted. Local Whisper captions are enabled by default. A silent game character or full-screen speaker does not automatically become a split-screen facecam.
-- Defaults to **five posts per day and five upcoming clips**, shared across channels, at least one hour apart. Additional clips wait for room. Same IDs and strongly overlapping moments from the same VOD are suppressed.
+- Defaults to **five clips per day and five upcoming clips**, shared across channels, at least one hour apart. Each clip uses one slot and goes to each selected profile. Additional clips wait for room. Same IDs and strongly overlapping moments from the same VOD are suppressed.
 - **Ask first** is the default. One **Schedule to @account** click schedules directly through WoopSocial; a second provider-side approval is not part of this flow. Automatic mode is an explicit opt-in.
-- Shows the exact selected Instagram destination. Approval freezes that destination; changing Settings cannot silently redirect an approved clip. No YouTube or TikTok destination is exposed.
+- Shows the exact selected destinations. Supports WoopSocial's Instagram, TikTok, YouTube, Facebook, X, Threads, LinkedIn, LinkedIn Pages, Pinterest and Bluesky profiles, plus WOOPTEST sandbox accounts. Profiles are individually selected; connecting or refreshing an account never selects it automatically. Approval freezes the profiles and their options, so changing Settings cannot redirect approved work. Status and links are tracked separately for each profile; partial failures are held for inspection without resending successful posts.
 - Remembers work after restarts. Ambiguous sends are held for inspection instead of retried into duplicate posts. This is not a guarantee of exactly-once behavior by third-party systems.
 - Ready clips show **Schedule → Damage Control → Deny**. Damage Control opens the satirical preview without deleting anything, contacting anyone or sending takedowns.
 
@@ -46,12 +46,12 @@ Open **http://127.0.0.1:8877**, username **owner**, using your configured passwo
 ## Connect and try it
 
 1. In Settings, save your Twitch application's public Client ID and click **Connect Twitch**. Enter the displayed code at Twitch's activation page. Use a **Public** Twitch application supporting device authorization; no client secret is used. See [Twitch device-flow documentation](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#device-code-grant-flow). A viewer account can read public clips; broadcaster management scopes are not requested.
-2. Save your WoopSocial API key, refresh connections, choose a project if needed, select the exact Instagram account and save. Connect the profile in WoopSocial first if it is absent. Credentials stay in Settings and encrypted local storage.
+2. Save your WoopSocial API key, refresh connections, choose a project if needed, check the exact profiles you want and save. Connect missing profiles in WoopSocial first. Select a board for Pinterest, visibility for YouTube/TikTok, and any applicable TikTok brand disclosures. Credentials stay in Settings and encrypted local storage. Existing Instagram-only settings migrate with only that profile selected.
 3. Add a Twitch channel and view target. Leave **Ask first** selected for the initial test. **Check now** reads Twitch while watching is paused; queued rendering begins after **Start watching**. It does not publish merely because a card is displayed.
-4. Preview a completed whole clip, then click **Schedule to @youraccount** if you want a real public Reel scheduled. Approval sends it without another approval in WoopSocial. Scheduling uses the next free local slot, at least 17 minutes ahead. The actual saved time appears under Schedule.
+4. Preview a completed whole clip and its destination list, then click **Schedule** to schedule it to those profiles. One approval sends it without another approval in WoopSocial. The provider validates each network's requirements before a post is created. Scheduling uses the next free local slot, at least 17 minutes ahead. The saved time and each profile's delivery status appear under Schedule.
 5. Leave the server running. Pause stops new polling/rendering and automatic approvals; an explicit approval already given still proceeds, and scheduled provider posts remain scheduled. To cancel a provider post, use WoopSocial.
 
-The daily budget covers posts reserved by **this app**. Existing posts created by other tools are not imported. WoopSocial and Instagram limits still apply. Only use media and integrations you are authorized to use. Twitch view counts can lag.
+The daily budget covers clips reserved by **this app**; a clip sent to several profiles counts once toward the five-clip limit and once per selected profile's provider allowance. Existing posts created by other tools are not imported. WoopSocial and each network's limits still apply. Only use media and integrations you are authorized to use. Twitch view counts can lag.
 
 ## Container and cloud
 

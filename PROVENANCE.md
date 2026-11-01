@@ -15,7 +15,7 @@ Upstream source snapshot: `cc1bcbc0aa5b6d518959e3daaac16545b21ff740`. The origin
 | `connected_accounts/models.py:AccountError` | `autopilot/engine/account.py` |
 | `publish/uploadpost.py:PlatformOutcome,FanOutResult` | `autopilot/engine/results.py` |
 
-Adapter changes are limited to package-local imports. Standalone server, storage, dashboard and worker are maintained in this repository. Standard dependencies include FastAPI, SQLite, FFmpeg, yt-dlp, Twitch and WoopSocial APIs. Provider accounts and permissions belong to the user.
+Adapter changes include package-local imports and, in version 0.1.3, the documented Bluesky/LinkedIn Pages/WOOPTEST platform mappings, optional YouTube made-for-kids payload field, and WoopSocial post-validation endpoint. The standalone destination selection, approval snapshots, per-profile options and delivery tracking are maintained here. Standard dependencies include FastAPI, SQLite, FFmpeg, yt-dlp, Twitch and WoopSocial APIs. Provider accounts and permissions belong to the user.
 
 The reusable gaming geometry, layout presets, framing and FFmpeg composition are also taken from `gaming/layout.py`, `gaming/layouts.json`, `gaming/framing.py` and `gaming/compose.py` at the same upstream snapshot. Imports use local adapters. The independent encoding adapter uses standard CPU H.264/AAC; no desktop configuration, editor, models, user media or credentials are copied.
 

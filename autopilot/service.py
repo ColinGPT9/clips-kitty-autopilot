@@ -7,10 +7,10 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from . import media
+from . import destinations, media
 from .engine.account import AccountError
 from .engine.twitch import TwitchProvider
-from .engine.woopsocial import WoopSocialClient, build_post, parse_post
+from .engine.woopsocial import PLATFORMS, WoopSocialClient
 from .feed import collect_clips
 
 
@@ -101,11 +101,14 @@ class Service:
             raise ValueError("Choose a project returned by your WoopSocial account.")
         accounts = [{"id": str(a["id"]), "platform": str(a.get("platform", "")).lower(),
                      "username": str(a.get("username") or "")[:100]}
-                    for a in client.social_accounts(project_id) if a.get("id")]
+                    for a in client.social_accounts(project_id) if a.get("id") and str(a.get("status", "CONNECTED")).upper() == "CONNECTED"]
         patch = {"accounts": accounts, "woop_project_id": project_id}
         current = settings["instagram_id"]
         if not any(a["id"] == current and a["platform"] == "instagram" for a in accounts):
             patch.update(instagram_id="", instagram_username="")
+        if settings["selected_account_ids"] is not None:
+            available = {a["id"] for a in accounts if a["platform"] in PLATFORMS}
+            patch["selected_account_ids"] = [identifier for identifier in settings["selected_account_ids"] if identifier in available]
         self.store.settings(patch)
         return {"projects": [{"id": str(p["id"]), "name": p.get("name", "Project")} for p in projects], "accounts": accounts}
 
@@ -114,7 +117,24 @@ class Service:
         account = next((a for a in settings["accounts"] if a["id"] == account_id and a["platform"] == "instagram"), None)
         if account is None:
             raise ValueError("Refresh connections and choose a connected Instagram account.")
-        self.store.settings({"instagram_id": account["id"], "instagram_username": account["username"]})
+        self.select_destinations([account_id])
+
+    def select_destinations(self, account_ids, options=None):
+        settings = self.store.settings()
+        if len(account_ids) != len(set(account_ids)):
+            raise ValueError("Select each profile only once.")
+        roster = {a["id"]: a for a in settings["accounts"] if a["platform"] in PLATFORMS}
+        if any(identifier not in roster for identifier in account_ids):
+            raise ValueError("Refresh connections and select only connected publishing profiles.")
+        options = options or {}
+        if set(options) - set(account_ids):
+            raise ValueError("Options must belong to selected profiles.")
+        proposed = {**settings, "selected_account_ids": account_ids, "destination_options": options}
+        if account_ids:
+            destinations.post_body(destinations.selected(proposed), media_id="check", text="check", title="check", when="2026-01-01T00:00:00Z")
+        instagram = next((roster[i] for i in account_ids if roster[i]["platform"] == "instagram"), {})
+        self.store.settings({"selected_account_ids": account_ids, "destination_options": options,
+                             "instagram_id": instagram.get("id", ""), "instagram_username": instagram.get("username", "")})
 
     def poll_watch(self, watch_id):
         watch = self.store.watch(watch_id)
@@ -166,10 +186,10 @@ class Service:
             db.execute("UPDATE clips SET state='needs_check',error='Delivery is being verified.' WHERE id=?", (clip["id"],))
         try:
             client = self.woop()
-            accounts = client.social_accounts(clip["project_id"])
-            account = next((a for a in accounts if str(a.get("id")) == clip["account_id"] and a.get("platform") == "INSTAGRAM"), None)
-            if account is None:
-                raise ValueError("The approved Instagram account is no longer connected. Refresh Settings; destination was not changed.")
+            roster = {str(a["id"]): a for a in client.social_accounts(clip["project_id"]) if str(a.get("status", "CONNECTED")).upper() == "CONNECTED"}
+            accounts = destinations.frozen(clip)
+            if not accounts or any(a["id"] not in roster or str(roster[a["id"]].get("platform", "")).upper() != PLATFORMS[a["platform"]] for a in accounts):
+                raise ValueError("An approved profile is no longer connected. Refresh Settings; destinations were not changed.")
             when = self.store.reserve_slot(clip["id"])
             post = self.store.post(clip["id"], scheduled_for=when)
             if post["request_id"]:
@@ -180,20 +200,22 @@ class Service:
             self.store.post(clip["id"], media_id=media_id)
             watch = self.store.watch(clip["watch_id"])
             credit = f"Clipped by {clip['creator']} on twitch.tv/{watch['login']}"
-            body = build_post(media_id=media_id, text=clip["title"] + "\n\n" + credit,
-                              accounts=[account], title=clip["title"], scheduled_for=when,
-                              overrides={"instagram": {"postType": "REEL"}})
-            body["projectId"] = clip["project_id"]
+            body = destinations.post_body(accounts, media_id=media_id, text=clip["title"] + "\n\n" + credit,
+                                          title=clip["title"], when=when)
+            validation = client.validate_post(body)
+            if validation.get("isValid") is not True:
+                errors = "; ".join(str(e.get("message", "Invalid destination settings")) for e in validation.get("errors", []) if isinstance(e, dict))
+                raise ValueError("WoopSocial validation failed before creating a post. " + errors[:500])
             response = client.create_post(body)
-            children = response.get("socialAccountPosts", [])
-            if len(children) != 1 or str(children[0].get("socialAccountId")) != clip["account_id"]:
-                raise ValueError("WoopSocial did not confirm the approved Instagram destination. Inspect its dashboard.")
-            result = parse_post(response)
-            if not result.request_id or len(result.outcomes) != 1 or result.outcomes[0].state in ("failed", "skipped"):
+            request_id = str(response.get("id") or response.get("postId") or "")
+            if request_id:
+                self.store.post(clip["id"], request_id=request_id)
+            results = destinations.deliveries(response, accounts)
+            self.store.post(clip["id"], deliveries=results)
+            if not request_id or any(r["state"] in ("failed", "skipped") for r in results):
                 raise ValueError("WoopSocial did not confirm this schedule. Inspect its dashboard before retrying.")
-            self.store.post(clip["id"], request_id=result.request_id)
             self.store.update_clip(clip["id"], state="scheduled", error="")
-            self.store.event(f"Scheduled {clip['title']} to Instagram @{clip['account_username']} at {when}", clip["id"])
+            self.store.event(f"Scheduled {clip['title']} to {destinations.label(accounts)} at {when}", clip["id"])
         except Exception as error:
             message = str(error) if isinstance(error, ValueError) else "Publishing needs inspection in WoopSocial. The send was not retried."
             self.store.update_clip(clip["id"], state="needs_check", error=message)
@@ -201,7 +223,9 @@ class Service:
 
     def refresh_posts(self):
         for post in self.store.posts():
-            if post["state"] != "scheduled" or not post["request_id"]:
+            if post["state"] not in ("scheduled", "needs_check") or not post["request_id"]:
+                continue
+            if post["state"] == "needs_check" and post["deliveries"] and all(r["state"] in ("published", "failed", "skipped") for r in post["deliveries"]):
                 continue
             due = datetime.fromisoformat(post["scheduled_for"].replace("Z", "+00:00")).timestamp()
             if time.time() < max(due, post["updated_at"] + 60):
@@ -209,16 +233,15 @@ class Service:
             try:
                 raw = self.woop().get_post(post["request_id"])
                 clip = self.store.clip(post["clip_id"])
-                children = raw.get("socialAccountPosts", [])
-                if len(children) != 1 or str(children[0].get("socialAccountId")) != clip["account_id"]:
-                    raise ValueError("Provider destination did not match the approved account")
-                parsed = parse_post(raw)
-                if parsed.outcomes and parsed.outcomes[0].state == "published":
+                accounts = destinations.frozen(clip)
+                results = destinations.deliveries(raw, accounts)
+                self.store.post(clip["id"], deliveries=results)
+                if all(r["state"] == "published" for r in results):
                     self.store.update_clip(clip["id"], state="published", error="")
-                    self.store.post(clip["id"], post_url=parsed.outcomes[0].post_url)
-                    self.store.event("Published to Instagram @" + clip["account_username"], clip["id"])
-                elif parsed.outcomes and parsed.outcomes[0].state == "failed":
-                    self.store.update_clip(clip["id"], state="needs_check", error="WoopSocial reports a delivery failure; inspect before retrying.")
+                    self.store.post(clip["id"], post_url=next((r["post_url"] for r in results if r["post_url"]), ""))
+                    self.store.event("Published to " + destinations.label(accounts), clip["id"])
+                elif any(r["state"] in ("failed", "skipped") for r in results):
+                    self.store.update_clip(clip["id"], state="needs_check", error="WoopSocial reports a delivery failure on a selected profile; inspect before retrying.")
                 else:
                     self.store.post(clip["id"])
             except Exception:

@@ -39,17 +39,20 @@ All routes except `GET /health` require HTTP Basic authentication, username `own
 | `POST /api/twitch/start` | Begin scope-free public-client device authorization |
 | `POST /api/twitch/poll` | Finish a specific pending device flow |
 | `POST /api/connections` | Read WoopSocial projects/accounts |
-| `POST /api/instagram` | Select an explicitly connected Instagram profile |
+| `POST /api/destinations` | Explicitly select connected profiles and per-profile publishing options |
+| `POST /api/instagram` | Legacy single-Instagram selection compatibility |
 | `POST /api/automation` | Start/pause watching and processing |
 | `POST /api/watches` | Add a channel, view target, lookback, mode and render options |
 | `PATCH /api/watches/{id}` | Edit target, enabled state, mode or rendering preferences |
 | `POST /api/watches/{id}/check` | Read current real Twitch clips |
 | `POST /api/clips/{id}/queue` | Queue an earlier/failed/denied clip idempotently |
-| `POST /api/clips/{id}/approve` | Approve review output for the displayed selected Instagram |
+| `POST /api/clips/{id}/approve` | Approve review output with the displayed profile IDs and destination revision |
 | `POST /api/clips/{id}/deny` | Decline unsent work |
 | `GET /media/{id}` | Authenticated rendered video only, including range requests |
 
 Ready clips expose Schedule, Damage Control and Deny in that order. Damage Control is a normal secondary button that opens the existing preview dialog entirely in the browser, without any API request. The popup's capability note states that nothing is deleted or sent.
+
+`destinations.py` builds an explicit per-profile list, including platform-specific options. Approval freezes that list and project; a stale selection/options revision is rejected. Legacy Instagram settings and approved work retain their original single profile. Refreshing connections never selects additional accounts. One upload and one parent WoopSocial post cover the selected profiles, after `/posts/validate` accepts the request. Individual child account IDs, platforms, states and URLs must match the approved snapshot. Partial failures remain held without retrying successful deliveries. The five-clip budget applies once per parent clip; every selected profile receives at most those five clips per day from this app.
 
 ## Gaming model execution
 

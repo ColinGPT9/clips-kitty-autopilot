@@ -59,6 +59,9 @@ PLATFORMS = {
     "threads": "THREADS",
     "linkedin": "LINKEDIN",
     "pinterest": "PINTEREST",
+    "bluesky": "BLUESKY",
+    "linkedin_pages": "LINKEDIN_PAGES",
+    "wooptest": "WOOPTEST",
 }
 FROM_PLATFORM = {v: k for k, v in PLATFORMS.items()}
 
@@ -288,6 +291,9 @@ class WoopSocialClient:
     def create_post(self, body: dict) -> dict:
         return self._request("POST", "/posts", json_body=body, timeout=UPLOAD_TIMEOUT)
 
+    def validate_post(self, body: dict) -> dict:
+        return self._request("POST", "/posts/validate", json_body=body)
+
     def get_post(self, post_id: str) -> dict:
         return self._request("GET", f"/posts/{_safe_id(post_id)}")
 
@@ -378,6 +384,8 @@ def build_post(
             # A video with no title is rejected rather than defaulted.
             child["title"] = (mine.get("title") or title or "")[:100]
             child["privacy"] = mine.get("privacy") or "public"
+            if isinstance(mine.get("madeForKids"), bool):
+                child["madeForKids"] = mine["madeForKids"]
         elif name == "tiktok":
             child["postType"] = mine.get("postType") or "VIDEO"
             child["privacyLevel"] = mine.get("privacyLevel") or "PUBLIC_TO_EVERYONE"

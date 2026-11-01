@@ -8,6 +8,7 @@ Observed November 1, 2026. Times below use UTC to avoid ambiguity during the US 
 - HTTPS deployment: https://13-184-154-246.sslip.io. The owner dashboard requires authentication; credentials are not published for judging.
 - Verified HTTPS certificate, HTTP-to-HTTPS redirect, successful health response, and unauthenticated rejection of the private status endpoint.
 - The independent app connected a Twitch viewer account through device authorization and selected Instagram **@clipskitty2** through WoopSocial. No YouTube or TikTok destination was selected or sent a post.
+- Instagram-only was the owner's live-test choice. Version 0.1.3 adds explicit multi-profile selection across WoopSocial's documented networks; additional profiles remain unselected unless the owner chooses them. This support is covered by offline tests, with no claim of new live delivery on those networks.
 - Shared limits are five daily posts and five upcoming clips. The test watch uses **Ask first**.
 
 ## Twitch read and whole Gaming render
@@ -43,12 +44,16 @@ Actual authenticated cloud preview footage was captured again with the corrected
 
 - The owner chose to keep the cloud clip unposted. Public provider scheduling/delivery was not tested in this new deployment.
 - Observe a genuine later view-count crossing if one becomes available. A read-only check at 08:51 UTC found the channel offline and no clips from the previous 30 minutes. Counts were not changed or fabricated.
-- The refreshed review demo, `Clips-Kitty-Autopilot-Cloud-Demo-v0.1.2.mp4`, is **143.834 seconds**, with corrected cloud Gaming/UI footage, local female narration, the revised Damage Control segment and the owner's Instagram recording. Full-file decoding and audible normalized narration passed (mean -18.3 dB, peak -1.5 dB). The owner uploads this version publicly to YouTube and supplies its actual URL.
+- The latest review demo, `Clips-Kitty-Contest-Demo-WoW-Forever.mp4`, is **129.921 seconds**. It uses WoW footage and the owner's full Instagram recording as a previously published example, actual deployed UI, a wedding hook and anonymous Damage Control payoff, and an all-socials closing. Preferred female narration, full-file decoding and normalized audio passed (mean -18.3 dB, peak -1.5 dB). The owner uploads this version publicly to YouTube and supplies its actual URL.
 
 ## Clip actions and owner-supplied published example
 
 Version **0.1.2** was independently verified live. Authenticated captures show Schedule, Damage Control and Deny on ready clips, and the existing popup opening directly from the Asmongold clip card. No scheduling or deletion was triggered by those captures.
 
 The owner supplied a 14.328-second phone recording created at 00:53:10 UTC on November 1 (October 31 evening in Eastern time). It visibly shows the existing Asmongold Reel on **@clipskitty2**. At the owner's request, the entire recording is included alongside the new cloud preview in the demo. Labels and narration identify it as an **original desktop-app publishing example**, rather than a new cloud-app delivery. The cloud test clips remain unposted.
+
+The latest cut uses the matching WoW: Forever edit beside that recording and labels both as previously published examples. Its narration omits the older application's platform label and the three public figures' names. Source provenance here remains unchanged: this recording is historical publication evidence, not a new cloud post.
+
+For the threshold segment, actual paused-cloud controls were recorded saving **100** and **10,000** as example targets, then restoring the original **2**. Ask First and the global pause were retained; no polling or scheduling was triggered, and no view counts were altered. The footage demonstrates editing configuration, not natural view growth.
 
 The previously published desktop-app Reel and its target-crossing evidence belong to the starter foundation. They are not claimed as standalone cloud results.

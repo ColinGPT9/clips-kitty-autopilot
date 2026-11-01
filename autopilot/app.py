@@ -1,4 +1,4 @@
-"""Owner dashboard and explicit, Instagram-only publication controls."""
+"""Owner dashboard and explicit publishing-profile controls."""
 from __future__ import annotations
 
 import json
@@ -8,7 +8,7 @@ import secrets
 import sqlite3
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from . import __version__
+from . import __version__, destinations
 from .engine.account import AccountError
 from .engine.errors import PublishError
 from .service import Service
@@ -80,11 +80,32 @@ class EnabledInput(Input):
 
 
 class ProjectInput(Input):
-    project_id: str = Field(default="", max_length=100, pattern=r"^\d*$")
+    project_id: str = Field(default="", max_length=128, pattern=r"^[A-Za-z0-9_-]*$")
 
 
 class InstagramInput(Input):
     account_id: str = Field(max_length=100, pattern=r"^\d+$")
+
+
+ProfileId = Annotated[str, Field(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9_-]+$")]
+
+
+class DestinationOptions(Input):
+    pinterestBoardId: ProfileId | None = None
+    privacy: Literal["public", "private", "unlisted"] | None = None
+    privacyLevel: Literal["PUBLIC_TO_EVERYONE", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "SELF_ONLY"] | None = None
+    allowComment: bool | None = None
+    allowDuet: bool | None = None
+    allowStitch: bool | None = None
+    isYourBrand: bool | None = None
+    isBrandedContent: bool | None = None
+    autoAddMusic: bool | None = None
+    madeForKids: bool | None = None
+
+
+class DestinationsInput(Input):
+    account_ids: list[ProfileId] = Field(max_length=50)
+    options: dict[ProfileId, DestinationOptions] = Field(default_factory=dict)
 
 
 class FlowInput(Input):
@@ -93,6 +114,8 @@ class FlowInput(Input):
 
 class ClipActionInput(Input):
     account_id: str | None = Field(default=None, max_length=100, pattern=r"^\d+$")
+    account_ids: list[ProfileId] | None = Field(default=None, min_length=1, max_length=50)
+    destination_revision: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
 
 
 def create_app(data_dir=None, *, password=None, start_worker=True):
@@ -169,8 +192,8 @@ def create_app(data_dir=None, *, password=None, start_worker=True):
         settings = store.settings()
         if not settings["twitch_client_id"] or not store.secret("twitch_token"):
             raise ValueError("Connect your Twitch viewer account in Settings first.")
-        if not store.secret("woop_key") or not settings["instagram_id"]:
-            raise ValueError("Connect WoopSocial and select your Instagram destination first.")
+        if not store.secret("woop_key") or not store.destinations():
+            raise ValueError("Connect WoopSocial and select publishing profiles first.")
 
     @app.get("/health")
     def health():
@@ -197,7 +220,9 @@ def create_app(data_dir=None, *, password=None, start_worker=True):
             clip["source_url"] = "https://clips.twitch.tv/" + clip["id"]
             clips.append(clip)
         token = json.loads(store.secret("twitch_token") or "{}")
-        return {"settings": store.settings(), "watches": watches, "clips": clips, "posts": store.posts(),
+        selected = store.destinations()
+        settings = {**store.settings(), "selected_destinations": selected, "destination_revision": destinations.revision(selected)}
+        return {"settings": settings, "watches": watches, "clips": clips, "posts": store.posts(),
                 "events": store.events(), "connections": {"twitch": bool(token),
                 "twitch_login": token.get("identity", {}).get("login", ""), "woopsocial": bool(store.secret("woop_key"))},
                 "counts": {"pending": sum(c["state"] in ACTIVE for c in clips),
@@ -211,7 +236,8 @@ def create_app(data_dir=None, *, password=None, start_worker=True):
         key = patch.pop("woop_key", None)
         if key:
             store.secret("woop_key", key.strip())
-            store.settings({"accounts": [], "instagram_id": "", "instagram_username": "", "woop_project_id": ""})
+            store.settings({"accounts": [], "instagram_id": "", "instagram_username": "", "woop_project_id": "",
+                            "selected_account_ids": [], "destination_options": {}})
         if "twitch_client_id" in patch and patch["twitch_client_id"] != store.settings()["twitch_client_id"]:
             store.secret("twitch_token", "")
             store.settings({"enabled": False})
@@ -233,6 +259,11 @@ def create_app(data_dir=None, *, password=None, start_worker=True):
     @app.post("/api/instagram", dependencies=[Depends(owner)])
     def instagram(data: InstagramInput):
         service.select_instagram(data.account_id)
+        return {"saved": True}
+
+    @app.post("/api/destinations", dependencies=[Depends(owner)])
+    def select_destinations(data: DestinationsInput):
+        service.select_destinations(data.account_ids, {key: value.model_dump(exclude_none=True) for key, value in data.options.items()})
         return {"saved": True}
 
     @app.post("/api/automation", dependencies=[Depends(owner)])
@@ -272,9 +303,14 @@ def create_app(data_dir=None, *, password=None, start_worker=True):
         if action == "queue":
             store.queue_clip(clip_id)
         elif action == "approve":
-            if not data.account_id:
-                raise ValueError("Review and include the selected Instagram account before scheduling.")
-            store.approve(clip_id, expected_account_id=data.account_id)
+            if data.account_ids is not None:
+                if data.account_id is not None or data.destination_revision is None:
+                    raise ValueError("Review the displayed profiles and destination options before scheduling.")
+                store.approve(clip_id, expected_account_ids=data.account_ids, expected_revision=data.destination_revision)
+            else:
+                if not data.account_id:
+                    raise ValueError("Review and include the selected publishing profiles before scheduling.")
+                store.approve(clip_id, expected_account_id=data.account_id)
         else:
             store.deny(clip_id)
         service.wake.set()

@@ -14,10 +14,13 @@ from zoneinfo import ZoneInfo
 
 from cryptography.fernet import Fernet
 
+from . import destinations
+
 ACTIVE = ("queued", "rendering", "review", "sending", "scheduled", "needs_check")
 DEFAULTS = {"enabled": False, "per_day": 5, "max_pending": 5, "gap_hours": 1,
             "day_start": "09:00", "timezone": "America/New_York", "twitch_client_id": "",
-            "woop_project_id": "", "instagram_id": "", "instagram_username": "", "accounts": []}
+            "woop_project_id": "", "instagram_id": "", "instagram_username": "", "accounts": [],
+            "selected_account_ids": None, "destination_options": {}}
 
 
 class Store:
@@ -64,6 +67,9 @@ class Store:
             CREATE TABLE IF NOT EXISTS events(
               id INTEGER PRIMARY KEY, at REAL NOT NULL, message TEXT NOT NULL, clip_id TEXT NOT NULL DEFAULT '');
             """)
+            for table, column in [("clips", "destinations"), ("posts", "deliveries")]:
+                if column not in {r["name"] for r in db.execute(f"PRAGMA table_info({table})")}:
+                    db.execute(f"ALTER TABLE {table} ADD COLUMN {column} TEXT NOT NULL DEFAULT '[]'")
 
     @contextmanager
     def connect(self):
@@ -253,15 +259,27 @@ class Store:
             db.execute("UPDATE clips SET state='rendering' WHERE id=?", (row["id"],))
             return dict(row)
 
-    def approve(self, clip_id, *, expected_account_id=None):
+    def destinations(self):
+        return destinations.selected(self.settings())
+
+    def destination_revision(self):
+        return destinations.revision(self.destinations())
+
+    def approve(self, clip_id, *, expected_account_id=None, expected_account_ids=None, expected_revision=None):
         settings = self.settings()
-        if not settings["instagram_id"] or not settings["woop_project_id"]:
-            raise ValueError("Select the Instagram account in Settings first.")
-        if expected_account_id is not None and settings["instagram_id"] != expected_account_id:
-            raise ValueError("The Instagram destination changed. Refresh and review the displayed account before scheduling.")
+        accounts = destinations.selected(settings)
+        if not accounts or not settings["woop_project_id"]:
+            raise ValueError("Select the publishing profiles in Settings first.")
+        ids = [a["id"] for a in accounts]
+        expected = expected_account_ids if expected_account_ids is not None else ([expected_account_id] if expected_account_id is not None else None)
+        if expected is not None and (len(expected) != len(ids) or set(expected) != set(ids)):
+            raise ValueError("The destinations changed. Refresh and review the displayed profiles before scheduling.")
+        if expected_revision is not None and expected_revision != destinations.revision(accounts):
+            raise ValueError("Destination options changed. Refresh and review before scheduling.")
+        destinations.post_body(accounts, media_id="check", text="check", title="check", when="2026-01-01T00:00:00Z")
         with self.connect() as db:
-            db.execute("UPDATE clips SET state='sending',account_id=?,account_username=?,project_id=? WHERE id=? AND state='review'",
-                       (settings["instagram_id"], settings["instagram_username"], settings["woop_project_id"], clip_id))
+            db.execute("UPDATE clips SET state='sending',account_id=?,account_username=?,project_id=?,destinations=? WHERE id=? AND state='review'",
+                       (accounts[0]["id"], accounts[0]["username"], settings["woop_project_id"], json.dumps(accounts), clip_id))
         return self.clip(clip_id)
 
     def reserve_slot(self, clip_id, *, now=None):
@@ -297,12 +315,18 @@ class Store:
 
     def posts(self):
         with self.connect() as db:
-            return [dict(r) for r in db.execute("SELECT posts.*,clips.title,clips.state,clips.account_username FROM posts JOIN clips ON clips.id=posts.clip_id ORDER BY scheduled_for")]
+            result = [dict(r) for r in db.execute("SELECT posts.*,clips.title,clips.state,clips.account_username,clips.destinations FROM posts JOIN clips ON clips.id=posts.clip_id ORDER BY scheduled_for")]
+        for row in result:
+            row["destinations"] = json.loads(row["destinations"])
+            row["deliveries"] = json.loads(row["deliveries"])
+        return result
 
     def post(self, clip_id, **values):
-        allowed = {"request_id", "media_id", "scheduled_for", "post_url"}
+        allowed = {"request_id", "media_id", "scheduled_for", "post_url", "deliveries"}
         if values.keys() - allowed:
             raise ValueError("Unknown post field")
+        if "deliveries" in values:
+            values["deliveries"] = json.dumps(values["deliveries"])
         with self.connect() as db:
             existing = db.execute("SELECT * FROM posts WHERE clip_id=?", (clip_id,)).fetchone()
             if existing:
@@ -312,7 +336,7 @@ class Store:
                     db.execute("UPDATE posts SET updated_at=? WHERE clip_id=?", (time.time(), clip_id))
             else:
                 db.execute("INSERT INTO posts(clip_id,scheduled_for,updated_at) VALUES (?,?,?)", (clip_id, values.get("scheduled_for", ""), time.time()))
-                for key in ("request_id", "media_id", "post_url"):
+                for key in ("request_id", "media_id", "post_url", "deliveries"):
                     if key in values:
                         db.execute(f"UPDATE posts SET {key}=? WHERE clip_id=?", (values[key], clip_id))
             row = db.execute("SELECT * FROM posts WHERE clip_id=?", (clip_id,)).fetchone()

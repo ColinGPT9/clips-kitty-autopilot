@@ -38,6 +38,9 @@ class Provider:
             raise TimeoutError("fixture lost response")
         return {"id": "90", "socialAccountPosts": [{"socialAccountId": "12", "platform": "INSTAGRAM", "deliveryStatus": "NOT_STARTED"}]}
 
+    def validate_post(self, body):
+        return {"isValid": True, "errors": [], "warnings": []}
+
 
 def test_explicit_approval_schedules_once_to_frozen_instagram(service, monkeypatch):
     provider = Provider()

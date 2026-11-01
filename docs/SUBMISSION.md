@@ -20,6 +20,7 @@ Codex implemented the standalone application, adapted library imports, wrote reg
 - Latest source checks passed on Windows, Linux and the CPU container; follow README setup to test this repository independently.
 - Real Twitch reads and a corrected whole Gaming output ran in this app. Actual cloud dashboard and preview footage were captured for the new demo. Do not reuse desktop footage as if it were this app.
 - The new review video, `Clips-Kitty-Autopilot-Cloud-Demo.mp4`, is **125.581 seconds**. It includes actual standalone cloud UI and preview footage, a corrected whole Gaming render, the exact Instagram destination, five/five limits and actual saved Codex build transcript excerpts. It identifies the source as an Earlier clip rather than a new natural crossing. Narration uses the requested local female voice; audio normalization and full-file decoding passed.
+- Refresh that video's Gaming footage after deploying version 0.1.1: the owner identified a webcam-exclusion crop mismatch after reviewing the first copy. The local framing correction has passed its regression and comparison checks.
 - Upload the review video publicly to YouTube; the owner performs this step. Only include third-party material/trademarks with required permissions. Enter the actual public URL in Devpost; no demo URL is supplied here yet.
 - State the actual hosting platform: AWS Lightsail, with persistent Docker volumes and Caddy HTTPS. The optional Render Blueprint was not deployed.
 

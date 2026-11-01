@@ -51,3 +51,37 @@ def test_whole_source_fit_keeps_bottom_safe_caption_position():
     from autopilot.engine import layout
     plan = layout.plan(1920, 1080, {"cam": None, "preset": "blurred", "game_box": [0, 0, 1, 1]})
     assert media.caption_margin(plan) == 210
+
+
+@pytest.mark.media
+def test_whole_gaming_excludes_webcam_from_game_panel(tmp_path, monkeypatch):
+    """The red source webcam appears only in its own band, as in Clips Kitty."""
+    source = tmp_path / "source.mp4"
+    subprocess.run([ffmpeg(), "-y", "-v", "error", "-f", "lavfi", "-i",
+                    "color=blue:size=320x180:rate=5:duration=1,drawbox=x=0:y=0:w=80:h=70:color=red:t=fill",
+                    "-c:v", "libx264", "-pix_fmt", "yuv420p", str(source)],
+                   check=True, capture_output=True, timeout=30)
+    plans = []
+    original = media.compose.render
+
+    def capture_plan(source, target, plan, **kwargs):
+        plans.append(plan)
+        return original(source, target, plan, **kwargs)
+
+    monkeypatch.setattr(media.compose, "render", capture_plan)
+    target = tmp_path / "vertical.mp4"
+    result = media.render_whole(source, target, {"camera": [0, 0, .25, 70 / 180], "captions": False})
+    game = plans[0].element("game")
+    x, y, w, h = game.src
+    assert x >= 80 or y >= 70, "The gameplay crop still includes the source webcam"
+    assert result["whole"] is True
+    assert abs(result["duration"] - 1) < .15
+    import numpy as np
+
+    pixels = subprocess.check_output([ffmpeg(), "-v", "error", "-i", str(target),
+                                      "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"])
+    frame = np.frombuffer(pixels, dtype=np.uint8).reshape(1920, 1080, 3)
+    dx, dy, dw, dh = game.dest
+    game_pixels = frame[dy + 4:dy + dh - 4, dx + 4:dx + dw - 4]
+    red = (game_pixels[:, :, 0] > 150) & (game_pixels[:, :, 1] < 80) & (game_pixels[:, :, 2] < 80)
+    assert red.mean() < .001, "A second red webcam is visible inside the gameplay"

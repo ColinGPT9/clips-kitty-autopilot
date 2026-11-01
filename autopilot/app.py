@@ -17,6 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from . import __version__
 from .engine.account import AccountError
 from .engine.errors import PublishError
 from .service import Service
@@ -124,7 +125,7 @@ def create_app(data_dir=None, *, password=None, start_worker=True):
         if not valid:
             raise HTTPException(401, "Sign in as owner.", headers={"WWW-Authenticate": "Basic"})
 
-    app = FastAPI(title="Clips Kitty Autopilot", version="0.1.0", lifespan=lifespan,
+    app = FastAPI(title="Clips Kitty Autopilot", version=__version__, lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url=None)
     app.state.store, app.state.service = store, service
 
@@ -173,7 +174,7 @@ def create_app(data_dir=None, *, password=None, start_worker=True):
 
     @app.get("/health")
     def health():
-        return {"app": "Clips Kitty Autopilot", "version": "0.1.0", "ok": True}
+        return {"app": "Clips Kitty Autopilot", "version": __version__, "ok": True}
 
     @app.get("/", dependencies=[Depends(owner)])
     def index():

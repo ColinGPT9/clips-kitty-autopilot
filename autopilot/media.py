@@ -135,7 +135,9 @@ def render_whole(source, target, options=None):
         detection = _camera(source, work, target.parent.parent / "models")
         cam = detection["camera"]
     settings = {"cam": cam, "preset": "half" if cam else "blurred", "order": "cam_top",
-                "game_fit": "fit", "game_box": [0, 0, 1, 1]}
+                "game_fit": "fit"}
+    if cam is None:
+        settings["game_box"] = [0, 0, 1, 1]
     plan = layout.plan(facts["width"], facts["height"], settings,
                        {"cam": detection["head"]} if cam and detection.get("head") else {})
     margin = caption_margin(plan)

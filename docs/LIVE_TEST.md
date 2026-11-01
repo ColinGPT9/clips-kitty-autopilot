@@ -21,10 +21,24 @@ Observed November 1, 2026. Times below use UTC to avoid ambiguity during the US 
 
 Watching was paused again after the corrected render. The last verified state had one clip ready for review, zero scheduled posts and zero published posts. No public scheduling request was sent from this new app. Actual authenticated browser footage captured the correct Instagram destination, five/five limits, Earlier clips, completed preview playback and the request-free satire popup; no synthetic API responses or UI counts were used.
 
-## Remaining live evidence
+## Second-channel private test: LIRIK
 
-- Obtain approval for the exact Instagram test before sending a real schedule; record the provider result and delivery separately.
+At 09:07 UTC the standalone cloud app read real `lirik` clips with a one-day lookback and target of 50 views. The 285-view clip became Earlier; clips with 46 and 19 views were not recorded. The target was then edited to 20. The unchanged 46-view clip qualified and entered the queue once. Two further checks each admitted zero clips, and the 19-view clip remained absent. This was admission after a target change, **not natural view-count growth**.
+
+The admitted clip (`FineSplendidShrimpKevinTurtle-GEPiRvC999bpNCVl`) rendered from approximately 09:07:21 to 09:09:35 UTC, about 2 minutes 14 seconds. Output measured **15.900 seconds, 1080×1920, with audio**, and full-file decoding passed. Visual checks at 3, 8 and 13 seconds confirmed the no-camera whole-source layout and generated captions. No game character was promoted to a webcam. Output SHA-256: `13ca94b4f934be40a86c8e2c1000dbc67a9acd924b50c5a732e6d00faf4af50f`.
+
+No public post was created. Watching was paused, the temporary LIRIK watch was disabled, and the original watch's enabled setting was restored. The private output remains available for review.
+
+## Webcam-aware crop correction: version 0.1.1
+
+The owner then identified that the standalone webcam split's game panel included a duplicate small source webcam. The standalone media adapter had forced a full-frame game box, overriding the foundation's webcam-exclusion geometry. Version 0.1.1 lets the original geometry choose the game region when a webcam exists; the no-camera path still fits the full source.
+
+A failing-first real FFmpeg regression reproduced the duplicate webcam. It now verifies that the rendered game panel excludes a distinctive source webcam while preserving duration. A local 60.100-second framing comparison, using the source app's existing detected camera box with fresh head refinement and captions, passed full decoding and visual checks against the original app's same-clip output. It is a **local framing comparison**, not fresh cloud model inference. The cloud image and demo footage still need updating for this correction.
+
+## Posting decision and remaining evidence
+
+- The owner chose to keep the cloud clip unposted. Public provider scheduling/delivery was not tested in this new deployment.
 - Observe a genuine later view-count crossing if one becomes available. A read-only check at 08:51 UTC found the channel offline and no clips from the previous 30 minutes. Counts were not changed or fabricated.
-- The new standalone review demo is complete: 125.581 seconds, actual cloud UI/preview footage, corrected Gaming output, local female narration and the satire popup. Full-file decoding and audible normalized narration were verified. The owner must upload it publicly to YouTube and supply the actual URL.
+- The standalone review demo is 125.581 seconds, with actual cloud UI/preview footage, local female narration and the satire popup. Full-file decoding and audible normalized narration passed. Replace its Gaming footage after the version 0.1.1 cloud refresh before the owner uploads the final public YouTube version.
 
 The previously published desktop-app Reel and its target-crossing evidence belong to the starter foundation. They are not claimed as standalone cloud results.

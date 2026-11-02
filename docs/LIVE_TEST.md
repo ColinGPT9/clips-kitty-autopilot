@@ -44,7 +44,7 @@ Actual authenticated cloud preview footage was captured again with the corrected
 
 - The owner chose to keep the cloud clip unposted. Public provider scheduling/delivery was not tested in this new deployment.
 - Observe a genuine later view-count crossing if one becomes available. A read-only check at 08:51 UTC found the channel offline and no clips from the previous 30 minutes. Counts were not changed or fabricated.
-- The latest review demo, `Clips-Kitty-Contest-Demo-WoW-Forever.mp4`, is **132.934 seconds**. It uses WoW footage and the owner's full Instagram recording as a previously published example, actual deployed UI, a wedding hook and anonymous Damage Control payoff, and an all-socials closing. Preferred female narration, full-file decoding and normalized audio passed (mean -18.3 dB, peak -1.5 dB). The owner uploads this version publicly to YouTube and supplies its actual URL.
+- The latest review demo, `Clips-Kitty-Contest-Demo-WoW-Forever.mp4`, is **172.637 seconds**. It uses WoW footage and the owner's full Instagram recording as a previously published example, actual deployed UI, a wedding hook and anonymous Damage Control payoff, and an all-socials closing. Preferred female narration, full-file decoding and normalized audio passed (mean -18.3 dB, peak -1.5 dB). The owner uploads this version publicly to YouTube and supplies its actual URL.
 
 ## Clip actions and owner-supplied published example
 

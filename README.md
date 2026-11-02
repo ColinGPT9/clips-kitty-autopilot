@@ -99,6 +99,7 @@ Tests use synthetic fixtures and offline provider fakes. Tests marked `media` us
 - [BYOK setup and privacy](docs/BYOK.md)
 - [Validation and limitations](docs/VALIDATION.md)
 - [Submission handoff](docs/SUBMISSION.md)
+- [Judge setup](docs/JUDGE_SETUP.md)
 - [Provenance](PROVENANCE.md)
 
 Licensed under [GNU AGPL v3](LICENSE). This project uses Twitch and WoopSocial APIs and is not endorsed by those services.

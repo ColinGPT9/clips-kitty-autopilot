@@ -1,6 +1,10 @@
 # Submission handoff: Clips Kitty Autopilot
 
+Copy-and-paste form answers: [Devpost submission fields](DEVPOST.md). Testing instructions: [Judge setup](JUDGE_SETUP.md).
+
 Repository: https://github.com/ColinGPT9/clips-kitty-autopilot
+
+Demo URL supplied by the entrant: https://youtu.be/_9trPSK_6gE. Confirm Public visibility and playback while signed out; the uploaded page could not be independently fetched during preparation.
 
 Starter foundation: https://github.com/ColinGPT9/clips-studio
 
@@ -20,7 +24,7 @@ Codex implemented the standalone application, adapted library imports, wrote reg
 - Latest source checks passed on Windows, Linux and the CPU container; follow README setup to test this repository independently.
 - Real Twitch reads and a corrected whole Gaming output ran in this app. Actual cloud dashboard and preview footage were captured for the new demo. Do not reuse desktop footage as if it were this app.
 - The latest review video, `Clips-Kitty-Contest-Demo-WoW-Forever.mp4`, is **167.954 seconds**. A wedding-regret hook pays off in the anonymous Damage Control segment later. World of Warcraft: Forever footage leads the holiday-gaming section, which also names The Legend of Zelda: Ocarina of Time and Grand Theft Auto 6 and explains that the workflow is built for whatever game is streamed. Actual saved threshold edits demonstrate targets of 100 and 10,000 views for smaller and larger communities; the original target was restored. The WoW edit and owner's Instagram recording are labeled as a **previously published example**, without claiming a new cloud delivery. The version 0.1.2 clip controls and actual Codex build excerpts remain visible. The slower narration explains YOLOv8n person detection, TalkNet active-speaker matching, OpenCV camera-border refinement and Whisper speech captions. The publishing section explains Automatic posting after a view threshold, manual Ask First review, and WoopSocial as the service that publishes scheduled videos to connected social profiles; Instagram is the example. The closing promotes Clips Kitty across socials and points to the AWS setup guide linked from the GitHub README. D M C A is spoken as separate letters, and the preview notice adds that no lawyer was contacted. Preferred female narration, audio normalization, visual checks and full-file decoding passed.
-- Upload the review video publicly to YouTube; the owner performs this step. Only include third-party material/trademarks with required permissions. Enter the actual public URL in Devpost; no demo URL is supplied here yet.
+- Enter the supplied YouTube URL in Devpost and verify Public visibility and sound. Only include third-party material/trademarks with required permissions.
 - State the actual hosting platform: AWS Lightsail, with persistent Docker volumes and Caddy HTTPS. The optional Render Blueprint was not deployed.
 
-The provided deadline is November 2, 2026; the prior rules check recorded 2 p.m. Pacific / 5 p.m. Eastern. Verify the form's current deadline when submitting.
+The [official rules](https://twitchcon-codex.devpost.com/rules), checked November 1, give the deadline as **November 2, 2026, 2 p.m. Pacific / 5 p.m. Eastern**. A saved draft is not submitted; finish Devpost's final submission step and verify its Submitted confirmation.

@@ -2,6 +2,14 @@
 .env.*
 !.env.example
 data/
+backups/
+.aws/
+*.key
+*.pem
+*.p12
+*.pfx
+*.sqlite*
+*.db
 .venv/
 __pycache__/
 *.py[cod]

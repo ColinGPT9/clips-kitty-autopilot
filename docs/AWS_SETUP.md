@@ -2,6 +2,8 @@
 
 This guide installs the independent Clips Kitty Autopilot app on Ubuntu in Amazon Lightsail. Your browser is the dashboard; the server keeps polling and processing when your computer is off. You do not need a separate Clips Kitty installation.
 
+**BYOK:** use your own AWS account/server, Twitch app/viewer connection, WoopSocial API key and social profiles. All addresses in this walkthrough are examples or placeholders. There is no shared hosted account or project-funded usage. Whisper captions and Gaming models run on your server without an OpenAI API key. See [BYOK setup and privacy](BYOK.md).
+
 Already installed? Go straight to [updates](#update-an-existing-installation) or [troubleshooting](#troubleshooting). Video/documentation-only updates do not require rebuilding your server.
 
 ## 1. Choose a server and review costs

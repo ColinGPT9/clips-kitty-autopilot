@@ -2,6 +2,8 @@
 
 A standalone, self-hosted web app for the moments a Twitch community already chose. Watch a channel's viewer-made clips, set a view target, preserve the whole clip in a vertical Gaming layout, review it and schedule it to your selected social profiles through WoopSocial. Every post credits the viewer who clipped it.
 
+**BYOK — bring your own keys, accounts and hosting.** Each installation uses your own Twitch application/viewer authorization, WoopSocial API key and social profiles, and your own computer or cloud server. Provider usage and hosting costs belong to the accounts you connect. This repository supplies no shared credentials, publishing account, paid quota or public demo login. Whisper captions and Gaming rendering run locally on your machine/server; they do not require an OpenAI API key or use the project creator's Codex allowance. See [BYOK setup and privacy](docs/BYOK.md).
+
 **Used as starter template / foundation:** [Clips Kitty](https://github.com/ColinGPT9/clips-studio), a pre-existing AGPL application, provides reusable Twitch/WoopSocial adapters and the Gaming renderer. This is a separate repository and runnable application with its own dashboard, database and worker. See [source provenance](PROVENANCE.md) for reused code and dates; the source app is not represented as newly created here.
 
 **Run it on your own AWS server:** follow the [step-by-step AWS Lightsail setup guide](docs/AWS_SETUP.md), including server creation, HTTPS, login, account connections, updates and troubleshooting.
@@ -43,7 +45,7 @@ cp .env.example .env
 .venv/bin/python -m autopilot
 ```
 
-Open **http://127.0.0.1:8877**, username **owner**, using your configured password. If no password is set, the app generates one in `data/owner-password.txt`. Environment variables override `.env`. Use `FFMPEG_BINARY` / `FFPROBE_BINARY` for explicit executable paths.
+Open **http://127.0.0.1:8877**, username **owner**, using your configured password. `owner` is the app's generic local login name, not a shared account. If no password is set, the app generates one in your installation's `data/owner-password.txt`. Environment variables override `.env`. Use `FFMPEG_BINARY` / `FFPROBE_BINARY` for explicit executable paths.
 
 ## Connect and try it
 
@@ -90,6 +92,7 @@ node --check autopilot/static/app.js
 Tests use synthetic fixtures and offline provider fakes. Tests marked `media` use real FFmpeg rendering and full decoding. CI checks Windows/Linux and independent container startup. No automated test sends a live social post.
 
 - [Architecture and API](docs/ARCHITECTURE.md)
+- [BYOK setup and privacy](docs/BYOK.md)
 - [Validation and limitations](docs/VALIDATION.md)
 - [Submission handoff](docs/SUBMISSION.md)
 - [Provenance](PROVENANCE.md)

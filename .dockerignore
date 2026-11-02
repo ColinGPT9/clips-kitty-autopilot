@@ -4,6 +4,14 @@
 .env
 .env.*
 data
+backups
+.aws
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+**/*.sqlite*
+**/*.db
 tests
 **/__pycache__
 .pytest_cache

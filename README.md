@@ -1,5 +1,9 @@
 # Clips Kitty Autopilot
 
+[![Watch the Clips Kitty Autopilot demo on YouTube](docs/assets/demo-preview.gif)](https://youtu.be/_9trPSK_6gE)
+
+**[▶ Watch the full demo on YouTube](https://youtu.be/_9trPSK_6gE)**
+
 A standalone, self-hosted web app for the moments a Twitch community already chose. Watch a channel's viewer-made clips, set a view target, preserve the whole clip in a vertical Gaming layout, review it and schedule it to your selected social profiles through WoopSocial. Every post credits the viewer who clipped it.
 
 **BYOK — bring your own keys, accounts and hosting.** Each installation uses your own Twitch application/viewer authorization, WoopSocial API key and social profiles, and your own computer or cloud server. Provider usage and hosting costs belong to the accounts you connect. This repository supplies no shared credentials, publishing account, paid quota or public demo login. Whisper captions and Gaming rendering run locally on your machine/server; they do not require an OpenAI API key or use the project creator's Codex allowance. See [BYOK setup and privacy](docs/BYOK.md).
